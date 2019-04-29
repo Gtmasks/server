@@ -25,6 +25,14 @@ import Backbone from './backbone'
 import ContactsMenu from './contactsmenu'
 import EventSource from './eventsource'
 import L10N from './l10n'
+import {
+	generateUrl,
+	filePath,
+	linkTo,
+	linkToOCS,
+	linkToRemote,
+	linkToRemoteBase,
+} from './routing'
 import msg from './msg'
 import Notification from './notification'
 import PasswordConfirmation from './password-confirmation'
@@ -46,4 +54,10 @@ export default {
 	Plugins,
 	search,
 	Util,
+	generateUrl,
+	filePath,
+	linkTo,
+	linkToOCS,
+	linkToRemote,
+	linkToRemoteBase,
 }
