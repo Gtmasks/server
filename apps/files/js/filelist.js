@@ -898,6 +898,7 @@
 		 */
 		_onClickSelectAll: function(e) {
 			var checked = $(e.target).prop('checked');
+			var hiddenFiles = this.$fileList.find('tr.hidden');
 			// Select only visible checkboxes to filter out unmatched file in search
 			this.$fileList.find('td.selection > .selectCheckBox:visible').prop('checked', checked)
 				.closest('tr').toggleClass('selected', checked);
@@ -907,9 +908,9 @@
 					// a search will automatically hide the unwanted rows
 					// let's only select the matches
 					var fileData = this.files[i];
-					var fileRow = this.$fileList.find('[data-id=' + fileData.id + ']');
+					var fileRow = this.$fileList.find('tr[data-id=' + fileData.id + ']:not(.hidden)');
 					// do not select already selected ones
-					if (!fileRow.hasClass('hidden') && _.isUndefined(this._selectedFiles[fileData.id])) {
+					if (fileRow.length > 0 && _.isUndefined(this._selectedFiles[fileData.id])) {
 						this._selectedFiles[fileData.id] = fileData;
 						this._selectionSummary.add(fileData);
 					}
@@ -917,7 +918,6 @@
 			} else {
 				// if we have some hidden row, then we're in a search
 				// Let's only deselect the visible ones
-				var hiddenFiles = this.$fileList.find('tr.hidden');
 				if (hiddenFiles.length > 0) {
 					var visibleFiles = this.$fileList.find('tr:not(.hidden)');
 					var self = this;
@@ -952,13 +952,7 @@
 			var self = this;
 			var dir = this.getCurrentDirectory();
 
-			if (this.isAllSelected() && this.getSelectedFiles().length > 1) {
-				files = OC.basename(dir);
-				dir = OC.dirname(dir) || '/';
-			}
-			else {
-				files = _.pluck(this.getSelectedFiles(), 'name');
-			}
+			files = _.pluck(this.getSelectedFiles(), 'name');
 
 			// don't allow a second click on the download action
 			if(this.fileMultiSelectMenu.isDisabled('download')) {
@@ -1020,10 +1014,7 @@
 		 * Event handler for when clicking on "Delete" for the selected files
 		 */
 		_onClickDeleteSelected: function(event) {
-			var files = null;
-			if (!this.isAllSelected()) {
-				files = _.pluck(this.getSelectedFiles(), 'name');
-			}
+			var files = _.pluck(this.getSelectedFiles(), 'name');
 			this.do_delete(files);
 			event.preventDefault();
 		},
@@ -1212,7 +1203,6 @@
 				tr,
 				fileData,
 				newTrs = [],
-				isAllSelected = this.isAllSelected(),
 				showHidden = this._filesConfig.get('showhidden');
 
 			if (index >= this.files.length) {
@@ -1228,7 +1218,7 @@
 				}
 				tr = this._renderRow(fileData, {updateSummary: false, silent: true, hidden: hidden});
 				this.$fileList.append(tr);
-				if (isAllSelected || this._selectedFiles[fileData.id]) {
+				if (this._selectedFiles[fileData.id]) {
 					tr.addClass('selected');
 					tr.find('.selectCheckBox').prop('checked', true);
 				}
@@ -3257,14 +3247,6 @@
 			return _.reduce(this.getSelectedFiles(), function(deletable, file) {
 				return deletable && (file.permissions & OC.PERMISSION_DELETE);
 			}, true);
-		},
-
-		/**
-		 * Returns whether all files are selected
-		 * @return true if all files are selected, false otherwise
-		 */
-		isAllSelected: function() {
-			return this.$el.find('.select-all').prop('checked');
 		},
 
 		/**
